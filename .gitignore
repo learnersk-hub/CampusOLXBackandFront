@@ -1,0 +1,54 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Environment Variables & Secrets (NEVER COMMIT THESE)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+!.env.example
+
+# --- Backend (Python/FastAPI) ---
+backend/__pycache__/
+backend/**/*.py[cod]
+backend/*$py.class
+backend/.venv/
+backend/venv/
+backend/env/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.coverage
+backend/htmlcov/
+backend/build/
+backend/dist/
+backend/*.egg-info/
+backend/test.db
+backend/*.sqlite3
+backend/alembic/__pycache__/
+backend/alembic/versions/__pycache__/
+
+# --- Frontend (Next.js/Node) ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.vercel
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnpm-debug.log*
+
+# Other project specific
+.planning/
+CAMPUS_BACKEND_PLANNING.md
