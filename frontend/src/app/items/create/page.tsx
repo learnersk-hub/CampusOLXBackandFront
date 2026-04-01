@@ -124,7 +124,7 @@ export default function CreateItemPage() {
                 >
                   {imagePreview ? (
                     <>
-                      <Image src={imagePreview} alt="Preview" fill className="object-cover transition-transform group-hover:scale-110 duration-700" />
+                      <Image src={imagePreview} alt="Preview" fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover transition-transform group-hover:scale-110 duration-700" />
                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                       <Button
                         type="button"

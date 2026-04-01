@@ -32,11 +32,12 @@ export default function ItemCard({ item }: ItemCardProps) {
           <div className="relative aspect-[1.1/1] overflow-hidden bg-gray-50 dark:bg-gray-800">
             {item.image_url ? (
               <Image
-                src={item.image_url}
-                alt={item.title}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
+                  src={item.image_url}
+                  alt={item.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-gray-300 dark:text-gray-700">
                 <Tag className="h-16 w-16 opacity-20" />

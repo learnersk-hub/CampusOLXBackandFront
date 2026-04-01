@@ -13,6 +13,16 @@ class UserCreate(UserBase):
     password: str
 
 
+class UserPublic(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    role: UserRole
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class UserResponse(UserBase):
     id: int
     role: UserRole

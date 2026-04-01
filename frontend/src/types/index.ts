@@ -23,6 +23,13 @@ export interface Item {
   category_id: number;
   status: ItemStatus;
   seller_id: number;
+  seller: {
+    id: number;
+    name: string;
+    email: string;
+    role: UserRole;
+    created_at: string;
+  };
   image_url: string | null;
   created_at: string;
 }

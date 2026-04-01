@@ -1,6 +1,10 @@
+from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
 from app.core.constants import ItemStatus
+
+
+from app.schemas.user import UserPublic
 
 
 class ItemBase(BaseModel):
@@ -20,6 +24,8 @@ class ItemResponse(ItemBase):
     id: int
     status: ItemStatus
     seller_id: int
+    seller: UserPublic
+    image_url: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

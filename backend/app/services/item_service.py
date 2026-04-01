@@ -7,6 +7,9 @@ from app.schemas.item import ItemCreate
 from app.core.constants import ItemStatus
 
 
+from sqlalchemy.orm import joinedload
+
+
 async def create_item(db: AsyncSession, item_in: ItemCreate, seller_id: int) -> Item:
     item_data = item_in.model_dump()
     if item_data.get("available_till") and item_data["available_till"].tzinfo:
@@ -14,8 +17,11 @@ async def create_item(db: AsyncSession, item_in: ItemCreate, seller_id: int) -> 
     item = Item(**item_data, seller_id=seller_id)
     db.add(item)
     await db.commit()
-    await db.refresh(item)
-    return item
+    # Fetch again with joinedload to ensure seller is available for the response
+    result = await db.execute(
+        select(Item).options(joinedload(Item.seller)).where(Item.id == item.id)
+    )
+    return result.scalar_one()
 
 
 async def list_available_items(
@@ -26,7 +32,7 @@ async def list_available_items(
     limit: int = 20,
     offset: int = 0,
 ) -> list[Item]:
-    query = select(Item).where(Item.status == ItemStatus.AVAILABLE)
+    query = select(Item).options(joinedload(Item.seller)).where(Item.status == ItemStatus.AVAILABLE)
 
     if q:
         search_term = f"%{q}%"

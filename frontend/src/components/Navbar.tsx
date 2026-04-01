@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -73,29 +74,40 @@ export default function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-64 p-2 rounded-2xl border-none shadow-2xl dark:bg-gray-900" align="end">
-                  <DropdownMenuLabel className="font-normal p-3">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-bold leading-none">{user?.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="font-normal p-3">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-bold leading-none">{user?.name}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                  </DropdownMenuGroup>
                   <DropdownMenuSeparator className="bg-gray-100 dark:bg-gray-800" />
                   <div className="p-1">
                     <DropdownMenuItem asChild className="rounded-xl focus:bg-indigo-50 dark:focus:bg-indigo-900/20 focus:text-indigo-600 dark:focus:text-indigo-400 cursor-pointer">
-                      <Link href="/dashboard" className="flex items-center w-full px-2 py-2">
+                      <Link href="/profile" className="flex items-center w-full px-4 py-2">
+                        <User className="mr-2.5 h-4 w-4 opacity-70" />
+                        <span className="font-bold">Profile Settings</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem asChild className="rounded-xl focus:bg-indigo-50 dark:focus:bg-indigo-900/20 focus:text-indigo-600 dark:focus:text-indigo-400 cursor-pointer">
+                      <Link href="/dashboard" className="flex items-center w-full px-4 py-2">
                         <LayoutDashboard className="mr-2.5 h-4 w-4 opacity-70" />
                         <span className="font-bold">Dashboard</span>
                       </Link>
                     </DropdownMenuItem>
+
                     <DropdownMenuItem asChild className="rounded-xl focus:bg-indigo-50 dark:focus:bg-indigo-900/20 focus:text-indigo-600 dark:focus:text-indigo-400 cursor-pointer">
-                      <Link href="/dashboard/listings" className="flex items-center w-full px-2 py-2">
+                      <Link href="/dashboard?tab=listings" className="flex items-center w-full px-4 py-2">
                         <ShoppingBag className="mr-2.5 h-4 w-4 opacity-70" />
                         <span className="font-bold">My Listings</span>
                       </Link>
                     </DropdownMenuItem>
+                    
                     {user?.role === 'admin' && (
                       <DropdownMenuItem asChild className="rounded-xl focus:bg-indigo-50 dark:focus:bg-indigo-900/20 focus:text-indigo-600 dark:focus:text-indigo-400 cursor-pointer">
-                        <Link href="/admin" className="flex items-center w-full px-2 py-2 text-indigo-600 dark:text-indigo-400">
+                        <Link href="/admin" className="flex items-center w-full px-4 py-2 text-indigo-600 dark:text-indigo-400">
                           <ShieldCheck className="mr-2.5 h-4 w-4 opacity-70" />
                           <span className="font-bold">Admin Console</span>
                         </Link>

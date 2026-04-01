@@ -1,20 +1,22 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { itemsApi } from '@/services/api';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, Users, ShoppingCart, AlertTriangle, ArrowUpRight, Ban, CheckCircle } from 'lucide-react';
+import { ShieldCheck, Users, ShoppingBag, AlertTriangle, ArrowUpRight, Ban, CheckCircle, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 export default function AdminPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!authLoading && user?.role !== 'admin') {
@@ -22,9 +24,20 @@ export default function AdminPage() {
     }
   }, [user, authLoading, router]);
 
-  const { data: allItems } = useQuery({
+  const { data: allItems, isLoading: itemsLoading } = useQuery({
     queryKey: ['admin-items'],
     queryFn: () => itemsApi.list(),
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: (id: number) => itemsApi.delete(id),
+    onSuccess: () => {
+      toast.success('Item removed by administrator');
+      queryClient.invalidateQueries({ queryKey: ['admin-items'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || 'Failed to remove item');
+    },
   });
 
   if (authLoading || user?.role !== 'admin') {
@@ -32,7 +45,7 @@ export default function AdminPage() {
   }
 
   const stats = [
-    { title: 'Total Items', value: allItems?.length || 0, icon: ShoppingCart, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { title: 'Total Items', value: allItems?.length || 0, icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
     { title: 'Active Users', value: '1,234', icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { title: 'Reports', value: '12', icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50' },
     { title: 'New Today', value: '48', icon: ArrowUpRight, color: 'text-indigo-600', bg: 'bg-indigo-50' },
@@ -98,26 +111,45 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                  {allItems?.slice(0, 5).map((item) => (
-                    <tr key={item.id} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-900/5 transition-colors group">
-                      <td className="px-10 py-6">
-                        <div className="flex flex-col">
-                          <span className="font-black text-gray-900 dark:text-gray-100 text-base">{item.title}</span>
-                          <span className="text-indigo-600 dark:text-indigo-400 font-black text-sm">${item.price}</span>
-                        </div>
-                      </td>
-                      <td className="px-10 py-6">
-                        <Badge variant="outline" className="capitalize font-black border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full px-3 py-1 text-[10px] tracking-widest">
-                          {item.status}
-                        </Badge>
-                      </td>
-                      <td className="px-10 py-6 text-right">
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-rose-500 hover:text-white hover:bg-rose-500 transition-all">
-                          <Ban className="h-5 w-5" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  <AnimatePresence mode="popLayout">
+                    {allItems?.map((item) => (
+                      <motion.tr 
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        key={item.id} 
+                        className="hover:bg-indigo-50/30 dark:hover:bg-indigo-900/5 transition-colors group"
+                      >
+                        <td className="px-10 py-6">
+                          <div className="flex flex-col">
+                            <span className="font-black text-gray-900 dark:text-gray-100 text-base">{item.title}</span>
+                            <span className="text-indigo-600 dark:text-indigo-400 font-black text-sm">${item.price}</span>
+                          </div>
+                        </td>
+                        <td className="px-10 py-6">
+                          <Badge variant="outline" className="capitalize font-black border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full px-3 py-1 text-[10px] tracking-widest">
+                            {item.status}
+                          </Badge>
+                        </td>
+                        <td className="px-10 py-6 text-right">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-10 w-10 rounded-xl text-rose-500 hover:text-white hover:bg-rose-500 transition-all"
+                            onClick={() => {
+                              if (confirm('Are you sure you want to remove this listing? This action cannot be undone.')) {
+                                deleteItemMutation.mutate(item.id);
+                              }
+                            }}
+                            disabled={deleteItemMutation.isPending}
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </Button>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
                 </tbody>
               </table>
             </div>

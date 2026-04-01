@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { LayoutGrid, ListFilter, RefreshCw, ShoppingCart, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function HomeClient() {
   const searchParams = useSearchParams();

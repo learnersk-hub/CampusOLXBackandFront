@@ -17,13 +17,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import RatingDialog from '@/components/RatingDialog';
 import EmptyState from '@/components/EmptyState';
 
-export default function DashboardPage() {
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Suspense } from 'react';
+
+
+function DashboardContent() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const currentTab = searchParams.get('tab') || 'listings';
+
+  const setTab = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', value);
+    router.push(`/dashboard?${params.toString()}`);
+  };
 
   const { data: myItems, isLoading: itemsLoading } = useQuery({
     queryKey: ['my-items'],
-    queryFn: () => itemsApi.list(), // In a real app, you'd have a specific endpoint for user items
+    queryFn: () => itemsApi.list(),
     select: (data) => data.filter(item => item.seller_id === user?.id),
   });
 
@@ -93,7 +106,7 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        <Tabs defaultValue="listings" className="space-y-10">
+        <Tabs value={currentTab} onValueChange={setTab} className="space-y-10">
           <TabsList className="bg-white dark:bg-gray-900 p-1.5 rounded-[1.5rem] shadow-sm border border-gray-100 dark:border-gray-800 h-16 w-full lg:w-fit grid grid-cols-3 gap-2">
             <TabsTrigger value="listings" className="rounded-2xl font-black text-xs uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">
               <ShoppingBag className="mr-2 h-4 w-4" />
@@ -124,7 +137,7 @@ export default function DashboardPage() {
                     <Card className="overflow-hidden border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 rounded-[2.5rem] group dark:bg-gray-900">
                       <div className="relative aspect-video">
                         {item.image_url ? (
-                          <Image src={item.image_url} alt={item.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                          <Image src={item.image_url} alt={item.title} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
                         ) : (
                           <div className="w-full h-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
                             <Package className="h-10 w-10 text-gray-200 dark:text-gray-700" />
@@ -184,7 +197,7 @@ export default function DashboardPage() {
                     <Card className="overflow-hidden border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none rounded-[2.5rem] dark:bg-gray-900">
                       <div className="relative aspect-video">
                         {res.item?.image_url ? (
-                          <Image src={res.item.image_url} alt={res.item.title} fill className="object-cover" />
+                          <Image src={res.item.image_url} alt={res.item.title} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
                         ) : (
                           <div className="w-full h-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
                             <Package className="h-10 w-10 text-gray-200 dark:text-gray-700" />
@@ -243,7 +256,7 @@ export default function DashboardPage() {
                             <div className="flex items-center gap-5">
                               <div className="h-16 w-16 rounded-2xl bg-gray-100 dark:bg-gray-800 relative overflow-hidden flex-shrink-0 shadow-sm">
                                 {res.item?.image_url && (
-                                  <Image src={res.item.image_url} alt="Item" fill className="object-cover transition-transform group-hover:scale-110" />
+                                  <Image src={res.item.image_url} alt="Item" fill sizes="64px" className="object-cover transition-transform group-hover:scale-110" />
                                 )}
                               </div>
                               <div className="flex flex-col gap-1">
@@ -319,5 +332,20 @@ export default function DashboardPage() {
         </Tabs>
       </main>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#fafafa] dark:bg-black">
+        <Navbar />
+        <main className="container mx-auto px-4 py-12 flex justify-center items-center">
+          <div className="h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        </main>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }

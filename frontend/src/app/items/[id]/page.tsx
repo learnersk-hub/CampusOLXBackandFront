@@ -15,6 +15,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+
 export default function ItemDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -98,6 +101,7 @@ export default function ItemDetailPage() {
                   src={item.image_url}
                   alt={item.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
                   className="object-contain p-10"
                   priority
                 />
@@ -178,9 +182,15 @@ export default function ItemDetailPage() {
                       >
                         {isAvailable ? 'Reserve This Item' : `Item is ${item.status}`}
                       </Button>
-                      <Button variant="outline" className="w-full h-14 rounded-2xl gap-3 font-black uppercase tracking-widest text-xs border-2 border-gray-100 dark:border-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all">
-                        <MessageCircle className="h-5 w-5" />
-                        Message Seller
+                      <Button 
+                        variant="outline" 
+                        className="w-full h-14 rounded-2xl gap-3 font-black uppercase tracking-widest text-xs border-2 border-gray-100 dark:border-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all"
+                        asChild
+                      >
+                        <a href={`mailto:${item.seller.email}?subject=Inquiry about ${item.title}`}>
+                          <MessageCircle className="h-5 w-5" />
+                          Message Seller
+                        </a>
                       </Button>
                     </>
                   )}
@@ -189,16 +199,23 @@ export default function ItemDetailPage() {
 
               <div className="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between">
                 <div className="flex items-center gap-5">
-                  <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black text-xl shadow-inner">
-                    S
-                  </div>
+                  <Avatar className="h-14 w-14 rounded-2xl border-2 border-indigo-50 dark:border-indigo-900/30">
+                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.seller.name}`} />
+                    <AvatarFallback className="bg-indigo-100 text-indigo-700 font-black text-xl">
+                      {item.seller.name[0]}
+                    </AvatarFallback>
+                  </Avatar>
                   <div>
-                    <h3 className="font-black text-gray-900 dark:text-gray-100 leading-none mb-1">Seller Profile</h3>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest">Active Student</p>
+                    <h3 className="font-black text-gray-900 dark:text-gray-100 leading-none mb-1">{item.seller.name}</h3>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest">
+                      {item.seller.role === 'admin' ? 'Administrator' : 'Student Member'}
+                    </p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
-                  <ArrowUpRight className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20" asChild>
+                  <Link href={`/profile/${item.seller_id}`}>
+                    <ArrowUpRight className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                  </Link>
                 </Button>
               </div>
 

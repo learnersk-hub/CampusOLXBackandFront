@@ -41,6 +41,24 @@ async def browse_items(
     )
 
 
+from sqlalchemy.orm import joinedload
+
+
+@router.get("/{item_id}", response_model=ItemResponse)
+async def get_item(
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Fetch a single item by its ID."""
+    result = await db.execute(
+        select(Item).options(joinedload(Item.seller)).where(Item.id == item_id)
+    )
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
 @router.post("/{item_id}/image", status_code=status.HTTP_200_OK)
 async def upload_image_for_item(
     item_id: int,
