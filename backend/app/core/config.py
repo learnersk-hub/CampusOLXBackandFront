@@ -1,7 +1,7 @@
-from pydantic import field_validator
+from pydantic import field_validator, AnyHttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
-from typing import List, Union
+from typing import List, Union, Any
 
 
 class Settings(BaseSettings):
@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     @field_validator("DATABASE_URL", "DATABASE_URL_POOLER", mode="before")
     @classmethod
-    def assemble_db_url(cls, v: str) -> str:
+    def assemble_db_url(cls, v: Any) -> Any:
         if isinstance(v, str):
             if v.startswith("postgres://"):
                 return v.replace("postgres://", "postgresql+asyncpg://", 1)
@@ -35,16 +35,22 @@ class Settings(BaseSettings):
     
     
     # CORS
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    BACKEND_CORS_ORIGINS: Any = ["http://localhost:3000"]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+    def assemble_cors_origins(cls, v: Any) -> List[str]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
+        elif isinstance(v, list):
             return v
-        raise ValueError(v)
+        elif isinstance(v, str) and v.startswith("["):
+            import json
+            try:
+                return json.loads(v)
+            except Exception:
+                return [v]
+        return ["http://localhost:3000"]
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
