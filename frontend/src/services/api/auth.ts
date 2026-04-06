@@ -3,7 +3,7 @@ import { User, AuthResponse } from '@/types';
 
 export const authApi = {
   signup: async (userData: any): Promise<User> => {
-    const { data } = await axiosInstance.post('/auth/signup', userData);
+    const { data } = await axiosInstance.post('auth/signup', userData);
     return data;
   },
 
@@ -12,7 +12,7 @@ export const authApi = {
     params.append('username', email);
     params.append('password', password);
 
-    const { data } = await axiosInstance.post('/auth/login', params, {
+    const { data } = await axiosInstance.post('auth/login', params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -21,7 +21,7 @@ export const authApi = {
   },
 
   getMe: async (): Promise<User> => {
-    const { data } = await axiosInstance.get('/users/me');
+    const { data } = await axiosInstance.get('users/me');
     return data;
   },
 };

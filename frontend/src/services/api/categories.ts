@@ -3,7 +3,7 @@ import { Category } from '@/types';
 
 export const categoriesApi = {
   list: async (): Promise<Category[]> => {
-    const { data } = await axiosInstance.get('/categories/');
+    const { data } = await axiosInstance.get('categories/');
     return data;
   },
 };
