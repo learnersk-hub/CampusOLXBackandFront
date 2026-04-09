@@ -23,10 +23,10 @@ export const itemsApi = {
     return data;
   },
 
-  uploadImage: async (itemId: number, file: File): Promise<{ image_url: string }> => {
+  uploadImage: async (itemId: number, file: File, slot: number = 1): Promise<{ image_url: string }> => {
     const formData = new FormData();
     formData.append('file', file);
-    const { data } = await axiosInstance.post(`items/${itemId}/image`, formData, {
+    const { data } = await axiosInstance.post(`items/${itemId}/image?slot=${slot}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

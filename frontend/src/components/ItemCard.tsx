@@ -8,12 +8,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 interface ItemCardProps {
   item: Item;
 }
 
 export default function ItemCard({ item }: ItemCardProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const statusColors = {
     available: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     reserved: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
@@ -53,40 +60,40 @@ export default function ItemCard({ item }: ItemCardProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>
 
-          <div className="p-6 flex flex-col flex-1">
-            <div className="flex justify-between items-start gap-4 mb-3">
-              <h3 className="font-black text-xl leading-tight text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-1">
+          <div className="p-4 md:p-6 flex flex-col flex-1">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-1 md:gap-4 mb-2 md:mb-3">
+              <h3 className="font-black text-lg md:text-xl leading-tight text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-1">
                 {item.title}
               </h3>
-              <div className="text-xl font-black text-indigo-600 dark:text-indigo-400">
-                ${item.price}
+              <div className="text-lg md:text-xl font-black text-indigo-600 dark:text-indigo-400">
+                ₹{item.price}
               </div>
             </div>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-6 font-medium leading-relaxed">
+            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 md:mb-6 font-medium leading-relaxed">
               {item.description}
             </p>
 
-            <div className="mt-auto space-y-4">
-              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+            <div className="mt-auto space-y-3 md:space-y-4">
+              <div className="flex items-center justify-between text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
                 <div className="flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-indigo-500/50" />
-                  <span>{item.pickup_location}</span>
+                  <MapPin className="h-3 w-3 md:h-3.5 md:w-3.5 text-indigo-500/50" />
+                  <span className="line-clamp-1">{item.pickup_location}</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Clock className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                  <span>{mounted ? formatDistanceToNow(new Date(item.created_at), { addSuffix: true }) : 'Recent'}</span>
                 </div>
               </div>
 
               <div className="h-px bg-gray-100 dark:bg-gray-800 w-full" />
 
               <div className="flex items-center justify-between group/btn">
-                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1 transition-transform">
+                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1 transition-transform">
                   View Details
                 </span>
-                <div className="h-8 w-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                  <PlusCircle className="h-4 w-4 rotate-45" />
+                <div className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  <PlusCircle className="h-3.5 w-3.5 md:h-4 md:w-4 rotate-45" />
                 </div>
               </div>
             </div>

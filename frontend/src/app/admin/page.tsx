@@ -124,7 +124,7 @@ export default function AdminPage() {
                         <td className="px-10 py-6">
                           <div className="flex flex-col">
                             <span className="font-black text-gray-900 dark:text-gray-100 text-base">{item.title}</span>
-                            <span className="text-indigo-600 dark:text-indigo-400 font-black text-sm">${item.price}</span>
+                            <span className="text-indigo-600 dark:text-indigo-400 font-black text-sm">₹{item.price}</span>
                           </div>
                         </td>
                         <td className="px-10 py-6">

@@ -63,11 +63,12 @@ async def get_item(
 async def upload_image_for_item(
     item_id: int,
     file: UploadFile = File(...),
+    slot: int = Query(1, ge=1, le=4),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """
-    Attaches an image to an existing item.
+    Attaches an image to an existing item in one of the 4 slots.
     Includes BOLA (Broken Object Level Authorization) protection.
     """
     # 1. Fetch the item
@@ -84,11 +85,18 @@ async def upload_image_for_item(
             detail="You can only upload images for your own items.",
         )
 
-    # 3. Upload to Cloudinary (The utility handles the 500 Failure Mode internally)
+    # 3. Upload to Cloudinary
     secure_url = await upload_item_image(file)
 
-    # 4. Save the URL to the database
-    item.image_url = secure_url
+    # 4. Save the URL to the database based on slot
+    if slot == 1:
+        item.image_url = secure_url
+    elif slot == 2:
+        item.image_url_2 = secure_url
+    elif slot == 3:
+        item.image_url_3 = secure_url
+    elif slot == 4:
+        item.image_url_4 = secure_url
 
     try:
         await db.commit()
@@ -100,7 +108,7 @@ async def upload_image_for_item(
             detail="Failed to save image URL to database.",
         )
 
-    return {"message": "Image uploaded successfully", "image_url": secure_url}
+    return {"message": f"Image uploaded to slot {slot} successfully", "image_url": secure_url}
 
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)

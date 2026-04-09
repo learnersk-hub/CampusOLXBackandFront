@@ -14,6 +14,7 @@ export interface User {
 export type ItemStatus = 'available' | 'reserved' | 'sold';
 
 export interface Item {
+  category: any;
   id: number;
   title: string;
   description: string;
@@ -31,6 +32,9 @@ export interface Item {
     created_at: string;
   };
   image_url: string | null;
+  image_url_2: string | null;
+  image_url_3: string | null;
+  image_url_4: string | null;
   created_at: string;
 }
 
@@ -40,7 +44,13 @@ export interface Category {
   description: string | null;
 }
 
-export type ReservationStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
+export type ReservationStatus = 'requested' | 'accepted' | 'rejected' | 'cancelled';
+
+export interface SellerContact {
+  name: string;
+  email: string;
+  phone: string;
+}
 
 export interface Reservation {
   id: number;
@@ -50,6 +60,7 @@ export interface Reservation {
   created_at: string;
   item?: Item;
   buyer?: User;
+  seller_contact?: SellerContact;
 }
 
 export interface AuthResponse {

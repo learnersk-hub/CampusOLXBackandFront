@@ -26,6 +26,9 @@ class ItemResponse(ItemBase):
     seller_id: int
     seller: UserPublic
     image_url: Optional[str] = None
+    image_url_2: Optional[str] = None
+    image_url_3: Optional[str] = None
+    image_url_4: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

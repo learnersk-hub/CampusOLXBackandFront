@@ -6,9 +6,11 @@ from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.item import Item
+from app.core.constants import ReservationStatus
 from app.schemas.reservation import (
     ReservationCreate,
     ReservationResponse,
+    SellerContact,
 )
 from app.services.reservation_service import (
     request_reservation,
@@ -23,6 +25,20 @@ from app.services.reservation_service import (
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
 
+def format_reservation_response(res, user_id: int):
+    """Hide seller contact unless reservation is accepted and user is the buyer."""
+    resp = ReservationResponse.model_validate(res)
+    
+    # If the user is the buyer AND the reservation is accepted, show contact info
+    if res.buyer_id == user_id and res.status == ReservationStatus.ACCEPTED:
+        resp.seller_contact = SellerContact(
+            name=res.item.seller.name,
+            email=res.item.seller.email,
+            phone=res.item.seller.phone
+        )
+    return resp
+
+
 @router.post("/", response_model=ReservationResponse)
 async def create_reservation(
     data: ReservationCreate,
@@ -30,9 +46,10 @@ async def create_reservation(
     current_user: User = Depends(get_current_user),
 ):
     """Create a new reservation request for an item."""
-    return await request_reservation(
+    res = await request_reservation(
         db=db, item_id=data.item_id, buyer_id=current_user.id
     )
+    return format_reservation_response(res, current_user.id)
 
 
 @router.get("/", response_model=list[ReservationResponse])
@@ -41,7 +58,8 @@ async def get_my_reservations(
     current_user: User = Depends(get_current_user),
 ):
     """Get all reservations where user is either buyer or seller."""
-    return await list_my_reservations(db, current_user.id)
+    reservations = await list_my_reservations(db, current_user.id)
+    return [format_reservation_response(res, current_user.id) for res in reservations]
 
 
 @router.get("/{reservation_id}", response_model=ReservationResponse)
@@ -51,7 +69,8 @@ async def get_reservation_by_id(
     current_user: User = Depends(get_current_user),
 ):
     """Get a specific reservation by ID."""
-    return await get_reservation(db, reservation_id, current_user.id)
+    res = await get_reservation(db, reservation_id, current_user.id)
+    return format_reservation_response(res, current_user.id)
 
 
 @router.post("/{reservation_id}/accept", response_model=ReservationResponse)
@@ -61,7 +80,8 @@ async def accept_reservation_request(
     current_user: User = Depends(get_current_user),
 ):
     """Seller accepts a reservation request."""
-    return await accept_reservation(db, reservation_id, seller_id=current_user.id)
+    res = await accept_reservation(db, reservation_id, seller_id=current_user.id)
+    return format_reservation_response(res, current_user.id)
 
 
 @router.post("/{reservation_id}/reject", response_model=ReservationResponse)
@@ -71,7 +91,8 @@ async def reject_reservation_request(
     current_user: User = Depends(get_current_user),
 ):
     """Seller rejects a reservation request."""
-    return await reject_reservation(db, reservation_id, seller_id=current_user.id)
+    res = await reject_reservation(db, reservation_id, seller_id=current_user.id)
+    return format_reservation_response(res, current_user.id)
 
 
 @router.post("/{reservation_id}/cancel", response_model=ReservationResponse)
@@ -81,7 +102,8 @@ async def cancel_reservation_request(
     current_user: User = Depends(get_current_user),
 ):
     """Cancel a reservation (buyer or seller can cancel)."""
-    return await cancel_reservation(db, reservation_id, user_id=current_user.id)
+    res = await cancel_reservation(db, reservation_id, user_id=current_user.id)
+    return format_reservation_response(res, current_user.id)
 
 
 @router.post("/{reservation_id}/sold", response_model=ReservationResponse)
@@ -91,4 +113,5 @@ async def confirm_item_sold(
     current_user: User = Depends(get_current_user),
 ):
     """Seller confirms the item has been sold and payment received."""
-    return await confirm_sale(db, reservation_id, seller_id=current_user.id)
+    res = await confirm_sale(db, reservation_id, seller_id=current_user.id)
+    return format_reservation_response(res, current_user.id)

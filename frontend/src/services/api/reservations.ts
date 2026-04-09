@@ -26,4 +26,9 @@ export const reservationsApi = {
     const { data } = await axiosInstance.post(`reservations/${id}/cancel`);
     return data;
   },
+
+  sold: async (id: number): Promise<Reservation> => {
+    const { data } = await axiosInstance.post(`reservations/${id}/sold`);
+    return data;
+  },
 };

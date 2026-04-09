@@ -2,7 +2,7 @@ from datetime import datetime
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from app.models.reservation import Reservation
 from app.models.item import Item
 from app.core.constants import ReservationStatus, ItemStatus
@@ -39,8 +39,14 @@ async def request_reservation(
     item.reserved_by_id = buyer_id
 
     await db.commit()
-    await db.refresh(reservation)
-    return reservation
+    # Reload with relations
+    stmt = (
+        select(Reservation)
+        .options(selectinload(Reservation.item).joinedload(Item.seller))
+        .where(Reservation.id == reservation.id)
+    )
+    result = await db.execute(stmt)
+    return result.scalar_one()
 
 
 async def accept_reservation(
@@ -49,7 +55,7 @@ async def accept_reservation(
     """Seller accepts a reservation request."""
     stmt = (
         select(Reservation)
-        .options(joinedload(Reservation.item))
+        .options(selectinload(Reservation.item).joinedload(Item.seller))
         .where(Reservation.id == reservation_id)
         .with_for_update()
     )
@@ -81,7 +87,7 @@ async def reject_reservation(
     """Seller rejects a reservation request and releases the item."""
     stmt = (
         select(Reservation)
-        .options(joinedload(Reservation.item))
+        .options(selectinload(Reservation.item).joinedload(Item.seller))
         .where(Reservation.id == reservation_id)
         .with_for_update()
     )
@@ -118,7 +124,7 @@ async def cancel_reservation(
     """Cancel a reservation. Buyer or seller can cancel."""
     stmt = (
         select(Reservation)
-        .options(joinedload(Reservation.item))
+        .options(selectinload(Reservation.item).joinedload(Item.seller))
         .where(Reservation.id == reservation_id)
         .with_for_update()
     )
@@ -159,7 +165,7 @@ async def confirm_sale(
     """Seller confirms the item has been sold. Marks item as SOLD and reservation as ACCEPTED."""
     stmt = (
         select(Reservation)
-        .options(joinedload(Reservation.item))
+        .options(selectinload(Reservation.item).joinedload(Item.seller))
         .where(Reservation.id == reservation_id)
         .with_for_update()
     )
@@ -196,7 +202,7 @@ async def get_reservation(
     """Get a specific reservation. User must be buyer or seller."""
     stmt = (
         select(Reservation)
-        .options(joinedload(Reservation.item))
+        .options(selectinload(Reservation.item).joinedload(Item.seller))
         .where(Reservation.id == reservation_id)
     )
     result = await db.execute(stmt)
@@ -217,9 +223,11 @@ async def list_my_reservations(db: AsyncSession, user_id: int) -> list[Reservati
     """Get all reservations where user is either buyer or seller."""
     stmt = (
         select(Reservation)
-        .options(joinedload(Reservation.item))
+        .join(Reservation.item)
+        .options(selectinload(Reservation.item).joinedload(Item.seller))
         .where(or_(Reservation.buyer_id == user_id, Item.seller_id == user_id))
         .order_by(Reservation.created_at.desc())
+        .distinct()
     )
     result = await db.execute(stmt)
     return result.scalars().all()

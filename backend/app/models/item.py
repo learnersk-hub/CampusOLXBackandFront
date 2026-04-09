@@ -20,6 +20,10 @@ class Item(Base):
     )
     
     image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    image_url_2: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    image_url_3: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    image_url_4: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    
     seller_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
 

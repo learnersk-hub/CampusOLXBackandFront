@@ -45,7 +45,7 @@ export default function HomeClient() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-6xl font-black tracking-tight text-gray-900 dark:text-gray-100 leading-[1.1]"
+              className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-gray-900 dark:text-gray-100 leading-[1.1]"
             >
               {q ? (
                 <>Found <span className="text-indigo-600 dark:text-indigo-400">"{q}"</span></>
@@ -57,7 +57,7 @@ export default function HomeClient() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-xl text-gray-500 dark:text-gray-400 font-medium max-w-2xl leading-relaxed"
+              className="text-lg sm:text-xl text-gray-500 dark:text-gray-400 font-medium max-w-2xl leading-relaxed"
             >
               The most trusted way to trade items with your fellow students. Safe, fast, and local.
             </motion.p>
@@ -154,6 +154,29 @@ export default function HomeClient() {
           </motion.div>
         )}
       </main>
+
+      <footer className="mt-24 border-t border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md py-12">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none">
+                <ShoppingCart className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-lg font-black tracking-tighter text-gray-900 dark:text-gray-100 uppercase">Campus <span className="text-indigo-600 dark:text-indigo-400">OLX</span></span>
+            </div>
+            
+            <p className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">
+              &copy; 2026 Campus OLX Marketplace. All Rights Reserved.
+            </p>
+
+            <div className="flex gap-8">
+              <a href="#" className="text-xs font-black text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 uppercase tracking-widest transition-colors">Privacy</a>
+              <a href="#" className="text-xs font-black text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 uppercase tracking-widest transition-colors">Terms</a>
+              <a href="#" className="text-xs font-black text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 uppercase tracking-widest transition-colors">Help</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -32,8 +32,8 @@ type ItemFormValues = z.infer<typeof itemSchema>;
 
 export default function CreateItemPage() {
   const router = useRouter();
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<(File | null)[]>([null, null, null, null]);
+  const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([null, null, null, null]);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -58,9 +58,15 @@ export default function CreateItemPage() {
         available_till: new Date(data.available_till).toISOString(),
       });
 
-      if (selectedImage) {
-        await itemsApi.uploadImage(item.id, selectedImage);
-      }
+      // Upload all selected images to their respective slots
+      const uploadPromises = selectedImages.map((file, index) => {
+        if (file) {
+          return itemsApi.uploadImage(item.id, file, index + 1);
+        }
+        return null;
+      });
+
+      await Promise.all(uploadPromises.filter(p => p !== null));
       return item;
     },
     onSuccess: () => {
@@ -72,16 +78,31 @@ export default function CreateItemPage() {
     },
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedImage(file);
+      const newSelectedImages = [...selectedImages];
+      newSelectedImages[index] = file;
+      setSelectedImages(newSelectedImages);
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const newPreviews = [...imagePreviews];
+        newPreviews[index] = reader.result as string;
+        setImagePreviews(newPreviews);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const removeImage = (index: number) => {
+    const newSelectedImages = [...selectedImages];
+    newSelectedImages[index] = null;
+    setSelectedImages(newSelectedImages);
+
+    const newPreviews = [...imagePreviews];
+    newPreviews[index] = null;
+    setImagePreviews(newPreviews);
   };
 
   const onSubmit = (data: ItemFormValues) => {
@@ -113,44 +134,45 @@ export default function CreateItemPage() {
                   <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
                     <ImagePlus className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   </div>
-                  Cover Image
+                  Product Images
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-8 pt-0">
-                <div 
-                  className={`relative aspect-square rounded-[2rem] border-2 border-dashed flex flex-col items-center justify-center transition-all overflow-hidden group ${
-                    imagePreview ? 'border-transparent' : 'border-gray-100 dark:border-gray-800 hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10'
-                  }`}
-                >
-                  {imagePreview ? (
-                    <>
-                      <Image src={imagePreview} alt="Preview" fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover transition-transform group-hover:scale-110 duration-700" />
-                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-4 right-4 h-10 w-10 rounded-xl shadow-xl active:scale-90 transition-transform"
-                        onClick={() => {
-                          setSelectedImage(null);
-                          setImagePreview(null);
-                        }}
-                      >
-                        <X className="h-5 w-5" />
-                      </Button>
-                    </>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer space-y-4 p-6 text-center">
-                      <div className="p-5 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl group-hover:scale-110 transition-transform">
-                        <ImagePlus className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-black text-gray-900 dark:text-gray-100 uppercase tracking-wider">Upload Photo</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 font-bold uppercase tracking-tighter">PNG, JPG up to 10MB</p>
-                      </div>
-                      <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                    </label>
-                  )}
+                <div className="grid grid-cols-2 gap-4">
+                  {[0, 1, 2, 3].map((index) => (
+                    <div 
+                      key={index}
+                      className={`relative aspect-square rounded-[1.5rem] border-2 border-dashed flex flex-col items-center justify-center transition-all overflow-hidden group ${
+                        imagePreviews[index] ? 'border-transparent' : 'border-gray-100 dark:border-gray-800 hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10'
+                      }`}
+                    >
+                      {imagePreviews[index] ? (
+                        <>
+                          <Image src={imagePreviews[index]!} alt={`Preview ${index + 1}`} fill sizes="(max-width: 768px) 50vw, 150px" className="object-cover transition-transform group-hover:scale-110 duration-700" />
+                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8 rounded-lg shadow-xl active:scale-90 transition-transform"
+                            onClick={() => removeImage(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer space-y-2 p-4 text-center">
+                          <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl group-hover:scale-110 transition-transform">
+                            <ImagePlus className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                          </div>
+                          <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                            {index === 0 ? 'Cover' : `Image ${index + 1}`}
+                          </span>
+                          <input type="file" className="hidden" accept="image/*" onChange={handleImageChange(index)} />
+                        </label>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -163,7 +185,7 @@ export default function CreateItemPage() {
                   Pro Tip
                 </h4>
                 <p className="text-sm font-medium text-indigo-50 leading-relaxed">
-                  Clear, well-lit photos increase your chances of selling by 300%. Make sure to show all angles!
+                  Clear, well-lit photos increase your chances of selling by 300%. Add up to 4 images to show all angles!
                 </p>
               </div>
             </div>
@@ -210,9 +232,9 @@ export default function CreateItemPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="price" className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Price (USD)</Label>
+                    <Label htmlFor="price" className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Price (₹)</Label>
                     <div className="relative group">
-                      <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                      <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-gray-400 group-focus-within:text-indigo-600 transition-colors">₹</span>
                       <Input
                         id="price"
                         placeholder="0.00"
